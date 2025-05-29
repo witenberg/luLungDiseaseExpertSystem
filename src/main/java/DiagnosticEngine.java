@@ -23,10 +23,10 @@ public class DiagnosticEngine {
     
     public DiagnosticResult diagnose(List<String> symptoms, List<String> riskFactors) {
         // Czyszczenie poprzednich faktów
-        new Query("retractall(objaw(_))").hasSolution();
-        new Query("retractall(czynnik_ryzyka(_))").hasSolution();
+        new Query("retractall(objaw(_, _))").hasSolution();
+        new Query("retractall(czynnik_ryzyka(_, _))").hasSolution();
 
-        // Dodawanie nowych faktów
+        // Dodawanie nowych faktów (bez wag, ponieważ są one zdefiniowane w bazie wiedzy)
         for (String objaw : symptoms) {
             new Query("assertz(objaw(" + objaw + "))").hasSolution();
         }
@@ -66,24 +66,26 @@ public class DiagnosticEngine {
     }
     
     private DiseaseExplanation getExplanationForDisease(String diseaseName, List<String> providedSymptoms, List<String> providedRiskFactors) {
-        // Pobranie wszystkich wymaganych objawów dla choroby
-        Query symptomQuery = new Query("choroba(" + diseaseName + ", Wymagane), findall(X, (member(objaw(X), Wymagane)), WymaganeObjawy)");
+        // Pobranie wszystkich wymaganych objawów dla choroby wraz z ich wagami
+        Query symptomQuery = new Query("choroba(" + diseaseName + ", Wymagane), findall(X-W, (member(objaw(X, W), Wymagane)), WymaganeObjawyZWagami)");
         Map<String, Term> symptomResult = symptomQuery.oneSolution();
-        List<String> requiredSymptoms = termToStringList(symptomResult.get("WymaganeObjawy"));
+        List<String> requiredSymptoms = parseWeightedTerms(symptomResult.get("WymaganeObjawyZWagami"));
         
-        // Pobranie wszystkich wymaganych czynników ryzyka dla choroby
-        Query riskQuery = new Query("choroba(" + diseaseName + ", Wymagane), findall(Y, (member(czynnik_ryzyka(Y), Wymagane)), WymaganeCzynniki)");
+        // Pobranie wszystkich wymaganych czynników ryzyka dla choroby wraz z ich wagami
+        Query riskQuery = new Query("choroba(" + diseaseName + ", Wymagane), findall(Y-W, (member(czynnik_ryzyka(Y, W), Wymagane)), WymaganeCzynnikiZWagami)");
         Map<String, Term> riskResult = riskQuery.oneSolution();
-        List<String> requiredRiskFactors = termToStringList(riskResult.get("WymaganeCzynniki"));
+        List<String> requiredRiskFactors = parseWeightedTerms(riskResult.get("WymaganeCzynnikiZWagami"));
         
         // Znalezienie pasujących objawów
         List<String> matchingSymptoms = providedSymptoms.stream()
-                .filter(requiredSymptoms::contains)
+                .filter(symptom -> requiredSymptoms.stream()
+                        .anyMatch(req -> req.startsWith(symptom + "-")))
                 .collect(Collectors.toList());
         
         // Znalezienie pasujących czynników ryzyka
         List<String> matchingRiskFactors = providedRiskFactors.stream()
-                .filter(requiredRiskFactors::contains)
+                .filter(factor -> requiredRiskFactors.stream()
+                        .anyMatch(req -> req.startsWith(factor + "-")))
                 .collect(Collectors.toList());
         
         return new DiseaseExplanation(
@@ -95,8 +97,8 @@ public class DiagnosticEngine {
         );
     }
     
-    // Metoda pomocnicza do konwersji termów Prologowych na listę Stringów
-    private List<String> termToStringList(Term listTerm) {
+    // Nowa metoda do parsowania terminów z wagami
+    private List<String> parseWeightedTerms(Term listTerm) {
         List<String> result = new ArrayList<>();
         
         // Jeśli lista jest pusta, zwróć pustą listę
@@ -107,7 +109,12 @@ public class DiagnosticEngine {
         // Inaczej parsuj elementy listy
         Term currentTerm = listTerm;
         while (currentTerm.arity() == 2) {
-            result.add(currentTerm.arg(1).toString());
+            Term pair = currentTerm.arg(1);
+            if (pair.arity() == 2) {
+                String name = pair.arg(1).toString();
+                String weight = pair.arg(2).toString();
+                result.add(name + "-" + weight);
+            }
             currentTerm = currentTerm.arg(2);
         }
         
