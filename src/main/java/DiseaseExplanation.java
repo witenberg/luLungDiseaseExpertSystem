@@ -11,18 +11,24 @@ public class DiseaseExplanation {
     private List<String> requiredRiskFactors;
     private List<String> matchingSymptoms;
     private List<String> matchingRiskFactors;
+    private List<String> keySymptoms;
+    private List<String> excludingSymptoms;
     
     public DiseaseExplanation(
             String diseaseName,
             List<String> requiredSymptoms,
             List<String> requiredRiskFactors,
             List<String> matchingSymptoms,
-            List<String> matchingRiskFactors) {
+            List<String> matchingRiskFactors,
+            List<String> keySymptoms,
+            List<String> excludingSymptoms) {
         this.diseaseName = diseaseName;
         this.requiredSymptoms = requiredSymptoms;
         this.requiredRiskFactors = requiredRiskFactors;
         this.matchingSymptoms = matchingSymptoms;
         this.matchingRiskFactors = matchingRiskFactors;
+        this.keySymptoms = keySymptoms;
+        this.excludingSymptoms = excludingSymptoms;
     }
     
     public String getDiseaseName() {
@@ -45,6 +51,14 @@ public class DiseaseExplanation {
         return matchingRiskFactors;
     }
     
+    public List<String> getKeySymptoms() {
+        return keySymptoms;
+    }
+    
+    public List<String> getExcludingSymptoms() {
+        return excludingSymptoms;
+    }
+    
     // Metoda zwracająca listę brakujących objawów
     public List<String> getMissingSymptoms() {
         List<String> missing = new ArrayList<>(requiredSymptoms);
@@ -60,93 +74,96 @@ public class DiseaseExplanation {
     }
 
     public String getExplanationText() {
-        StringBuilder explanation = new StringBuilder();
-        
-        // Dodanie nazwy choroby
-        explanation.append("Wyjaśnienie dla: ").append(DiagnosticData.translateDiseaseName(diseaseName)).append("\n\n");
-        
-        // Dodanie informacji o objawach
-        List<String> matchingSymptomNames = new ArrayList<>();
-        List<String> missingSymptomNames = new ArrayList<>();
-        
-        for (String symptom : requiredSymptoms) {
-            String[] parts = symptom.split("-");
-            String symptomName = parts[0];
-            double weight = parts.length > 1 ? Double.parseDouble(parts[1]) : 1.0;
-            String weightText = weight >= 0.9 ? " (bardzo ważny)" : 
-                              weight >= 0.7 ? " (ważny)" : 
-                              weight >= 0.5 ? " (istotny)" : " (pomocniczy)";
-            
-            String symptomText = DiagnosticData.translateSymptom(symptomName) + weightText;
-            
-            if (matchingSymptoms.contains(symptomName)) {
-                matchingSymptomNames.add("[+] " + symptomText);
-            } else {
-                missingSymptomNames.add("[-] " + symptomText);
+        StringBuilder sb = new StringBuilder();
+        sb.append("Wyjaśnienie diagnozy:\n\n");
+
+        // Sekcja objawów kluczowych
+        if (!keySymptoms.isEmpty()) {
+            sb.append("OBJAWY KLUCZOWE (wysokie prawdopodobieństwo choroby przy ich obecności):\n");
+            for (String symptom : keySymptoms) {
+                String symptomName = symptom.split("-")[0];
+                String weight = symptom.split("-")[1];
+                boolean isPresent = matchingSymptoms.stream()
+                        .anyMatch(s -> s.startsWith(symptomName + "-"));
+                
+                sb.append(String.format("[%s] %s (waga: %s)%s\n",
+                    isPresent ? "+" : "-",
+                    DiagnosticData.translateSymptom(symptomName),
+                    weight,
+                    isPresent ? "" : " - BRAK TEGO OBJAWU!"));
             }
+            sb.append("\n");
         }
-        
-        explanation.append("Pasujące objawy (").append(matchingSymptomNames.size())
-                  .append("/").append(requiredSymptoms.size()).append("):\n");
-        if (!matchingSymptomNames.isEmpty()) {
-            for (String symptom : matchingSymptomNames) {
-                explanation.append(symptom).append("\n");
+
+        // Sekcja objawów wykluczających
+        if (!excludingSymptoms.isEmpty()) {
+            sb.append("OBJAWY WYKLUCZAJĄCE (obecność któregokolwiek wyklucza diagnozę):\n");
+            for (String symptom : excludingSymptoms) {
+                boolean isPresent = matchingSymptoms.stream()
+                        .anyMatch(s -> s.startsWith(symptom + "-"));
+                
+                sb.append(String.format("[%s] %s%s\n",
+                    isPresent ? "+" : "-",
+                    DiagnosticData.translateSymptom(symptom),
+                    isPresent ? " - OBECNY! Diagnoza wykluczona!" : ""));
             }
-        } else {
-            explanation.append("Brak pasujących objawów\n");
+            sb.append("\n");
         }
-        
-        explanation.append("\nBrakujące objawy:\n");
-        if (!missingSymptomNames.isEmpty()) {
-            for (String symptom : missingSymptomNames) {
-                explanation.append(symptom).append("\n");
+
+        // Sekcja pasujących objawów
+        if (!matchingSymptoms.isEmpty()) {
+            sb.append("PASUJĄCE OBJAWY:\n");
+            for (String symptom : matchingSymptoms) {
+                String[] parts = symptom.split("-");
+                String symptomName = parts[0];
+                String weight = parts.length > 1 ? parts[1] : "1.0";
+                sb.append(String.format("+ %s (waga: %s)\n",
+                    DiagnosticData.translateSymptom(symptomName),
+                    weight));
             }
-        } else {
-            explanation.append("Brak brakujących objawów\n");
+            sb.append("\n");
         }
-        
-        // Dodanie informacji o czynnikach ryzyka
-        if (!requiredRiskFactors.isEmpty()) {
-            List<String> matchingFactorNames = new ArrayList<>();
-            List<String> missingFactorNames = new ArrayList<>();
-            
-            for (String factor : requiredRiskFactors) {
+
+        // Sekcja brakujących objawów
+        List<String> missingSymptoms = requiredSymptoms.stream()
+                .filter(symptom -> !matchingSymptoms.contains(symptom))
+                .collect(Collectors.toList());
+        if (!missingSymptoms.isEmpty()) {
+            sb.append("BRAKUJĄCE OBJAWY:\n");
+            for (String symptom : missingSymptoms) {
+                String[] parts = symptom.split("-");
+                String symptomName = parts[0];
+                String weight = parts.length > 1 ? parts[1] : "1.0";
+                sb.append(String.format("- %s (waga: %s)\n",
+                    DiagnosticData.translateSymptom(symptomName),
+                    weight));
+            }
+            sb.append("\n");
+        }
+
+        // Sekcja czynników ryzyka
+        if (!matchingRiskFactors.isEmpty() || !requiredRiskFactors.isEmpty()) {
+            sb.append("CZYNNIKI RYZYKA:\n");
+            for (String factor : matchingRiskFactors) {
                 String[] parts = factor.split("-");
                 String factorName = parts[0];
-                double weight = parts.length > 1 ? Double.parseDouble(parts[1]) : 1.0;
-                String weightText = weight >= 0.9 ? " (bardzo ważny)" : 
-                                  weight >= 0.7 ? " (ważny)" : 
-                                  weight >= 0.5 ? " (istotny)" : " (pomocniczy)";
-                
-                String factorText = DiagnosticData.translateRiskFactor(factorName) + weightText;
-                
-                if (matchingRiskFactors.contains(factorName)) {
-                    matchingFactorNames.add("[+] " + factorText);
-                } else {
-                    missingFactorNames.add("[ ] " + factorText);
-                }
+                String weight = parts.length > 1 ? parts[1] : "1.0";
+                sb.append(String.format("+ %s (waga: %s)\n",
+                    DiagnosticData.translateRiskFactor(factorName),
+                    weight));
             }
-            
-            explanation.append("\nPasujące czynniki ryzyka (").append(matchingFactorNames.size())
-                      .append("/").append(requiredRiskFactors.size()).append("):\n");
-            if (!matchingFactorNames.isEmpty()) {
-                for (String factor : matchingFactorNames) {
-                    explanation.append(factor).append("\n");
+            for (String factor : requiredRiskFactors) {
+                if (!matchingRiskFactors.contains(factor)) {
+                    String[] parts = factor.split("-");
+                    String factorName = parts[0];
+                    String weight = parts.length > 1 ? parts[1] : "1.0";
+                    sb.append(String.format("- %s (waga: %s)\n",
+                        DiagnosticData.translateRiskFactor(factorName),
+                        weight));
                 }
-            } else {
-                explanation.append("Brak pasujących czynników ryzyka\n");
-            }
-            
-            explanation.append("\nBrakujące czynniki ryzyka:\n");
-            if (!missingFactorNames.isEmpty()) {
-                for (String factor : missingFactorNames) {
-                    explanation.append(factor).append("\n");
-                }
-            } else {
-                explanation.append("Brak brakujących czynników ryzyka\n");
             }
         }
-        
-        return explanation.toString();
+
+        return sb.toString();
     }
 }

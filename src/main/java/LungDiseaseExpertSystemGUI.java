@@ -217,7 +217,13 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
         panel.setLayout(new GridLayout(0, columns, 12, 10));
         panel.setBackground(BG_COLOR);
         for (String element : elements) {
-            JCheckBox checkBox = new JCheckBox(element.replace("_", " "));
+            String displayText;
+            if (title.equals("Objawy")) {
+                displayText = DiagnosticData.translateSymptom(element);
+            } else {
+                displayText = DiagnosticData.translateRiskFactor(element);
+            }
+            JCheckBox checkBox = new JCheckBox(displayText);
             checkBox.setFont(CHECKBOX_FONT);
             checkBox.setBackground(BG_COLOR);
             checkBox.setActionCommand(element);

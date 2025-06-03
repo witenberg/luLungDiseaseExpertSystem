@@ -27,7 +27,7 @@ public class DiagnosticResult {
         
         // Pobierz najbardziej prawdopodobną diagnozę
         Map.Entry<String, Double> mostProbableDiagnosis = diagnoses.get(0);
-        String diseaseName = mostProbableDiagnosis.getKey();
+        String diseaseName = DiagnosticData.translateDiseaseName(mostProbableDiagnosis.getKey());
         double probability = mostProbableDiagnosis.getValue();
         
         result.append("Najbardziej prawdopodobna diagnoza:\n");
@@ -38,7 +38,7 @@ public class DiagnosticResult {
             result.append("Inne możliwe diagnozy:\n");
             for (int i = 1; i < diagnoses.size(); i++) {
                 Map.Entry<String, Double> diagnosis = diagnoses.get(i);
-                result.append("- ").append(diagnosis.getKey())
+                result.append("- ").append(DiagnosticData.translateDiseaseName(diagnosis.getKey()))
                       .append(" - ").append(String.format("%.2f", diagnosis.getValue()))
                       .append("%\n");
             }
