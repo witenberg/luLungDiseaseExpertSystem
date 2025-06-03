@@ -1,6 +1,7 @@
 package main.java;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -18,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import java.awt.Color;
-import javax.swing.JSplitPane;
 import java.awt.FlowLayout;
 
 public class LungDiseaseExpertSystemGUI extends JFrame {
@@ -31,6 +31,8 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
     private JTextArea wynikArea;
     private JTextArea wyjasnienieArea;
     private DiagnosticEngine diagnosticEngine;
+    private CardLayout cardLayout;
+    private JPanel mainPanel;
     private static final Color BG_COLOR = new Color(245, 245, 245);
     private static final Color HEADER_COLOR = new Color(30, 30, 30);
     private static final Color BORDER_COLOR = new Color(180, 180, 180);
@@ -61,73 +63,156 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
     }
 
     private void createUIComponents() {
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);
         mainPanel.setBackground(BG_COLOR);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Nagłówek objawów wyrównany do lewej
-        JPanel objawyHeaderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        objawyHeaderPanel.setBackground(BG_COLOR);
-        JLabel tytulObjawy = createHeaderLabel("Wybierz objawy:");
-        objawyHeaderPanel.add(tytulObjawy);
-        mainPanel.add(objawyHeaderPanel);
-        JScrollPane objawyScrollPane = createSymptomsPanel();
-        mainPanel.add(objawyScrollPane);
+        // Create the three main screens
+        JPanel symptomsPanel = createSymptomsScreen();
+        JPanel riskFactorsPanel = createRiskFactorsScreen();
+        JPanel resultsPanel = createResultsScreen();
 
-        // Nagłówek czynników ryzyka wyrównany do lewej
-        JPanel czynnikiHeaderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        czynnikiHeaderPanel.setBackground(BG_COLOR);
-        JLabel tytulCzynniki = createHeaderLabel("Wybierz czynniki ryzyka:");
-        czynnikiHeaderPanel.add(tytulCzynniki);
-        mainPanel.add(czynnikiHeaderPanel);
-        JScrollPane czynnikRyzykaScrollPane = createRiskFactorsPanel();
-        mainPanel.add(czynnikRyzykaScrollPane);
+        // Add screens to card layout
+        mainPanel.add(symptomsPanel, "SYMPTOMS");
+        mainPanel.add(riskFactorsPanel, "RISK_FACTORS");
+        mainPanel.add(resultsPanel, "RESULTS");
 
-        JPanel buttonPanel = createButtonPanel();
-        mainPanel.add(buttonPanel);
-
-        // Panel z wynikami i wyjaśnieniem obok siebie
-        JPanel resultsAndExplanationPanel = new JPanel(new BorderLayout());
-
-        // Panele z nagłówkami i polami tekstowymi
-        JPanel leftPanel = new JPanel(new BorderLayout());
-        leftPanel.setBackground(BG_COLOR);
-        JPanel leftHeaderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        leftHeaderPanel.setBackground(BG_COLOR);
-        JLabel tytulWyniki = createHeaderLabel("Wyniki diagnozy:");
-        leftHeaderPanel.add(tytulWyniki);
-        leftPanel.add(leftHeaderPanel, BorderLayout.NORTH);
-        JScrollPane wynikScrollPane = createResultsPanel();
-        wynikScrollPane.setPreferredSize(new Dimension(900, 400));
-        leftPanel.add(wynikScrollPane, BorderLayout.CENTER);
-        leftPanel.setMinimumSize(new Dimension(400, 400));
-        leftPanel.setPreferredSize(new Dimension(900, 400));
-
-        JPanel rightPanel = new JPanel(new BorderLayout());
-        rightPanel.setBackground(BG_COLOR);
-        JPanel rightHeaderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        rightHeaderPanel.setBackground(BG_COLOR);
-        JLabel tytulWyjasnienia = createHeaderLabel("Wyjaśnienie diagnozy:");
-        rightHeaderPanel.add(tytulWyjasnienia);
-        rightPanel.add(rightHeaderPanel, BorderLayout.NORTH);
-        JScrollPane wyjasnienieScrollPane = createExplanationPanel();
-        wyjasnienieScrollPane.setPreferredSize(new Dimension(900, 400));
-        rightPanel.add(wyjasnienieScrollPane, BorderLayout.CENTER);
-        rightPanel.setMinimumSize(new Dimension(400, 400));
-        rightPanel.setPreferredSize(new Dimension(900, 400));
-
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
-        splitPane.setResizeWeight(0.5);
-        splitPane.setDividerLocation(getWidth() / 2);
-        splitPane.setBackground(BG_COLOR);
-        splitPane.setBorder(null);
-        resultsAndExplanationPanel.add(splitPane, BorderLayout.CENTER);
-        resultsAndExplanationPanel.setPreferredSize(new Dimension(1800, 500));
-        resultsAndExplanationPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 700));
-
-        mainPanel.add(resultsAndExplanationPanel);
         add(mainPanel);
+    }
+
+    private JPanel createSymptomsScreen() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Header
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        headerPanel.setBackground(BG_COLOR);
+        JLabel headerLabel = createHeaderLabel("Wybierz objawy:");
+        headerPanel.add(headerLabel);
+        panel.add(headerPanel, BorderLayout.NORTH);
+
+        // Symptoms checkboxes
+        JScrollPane symptomsScrollPane = createSymptomsPanel();
+        panel.add(symptomsScrollPane, BorderLayout.CENTER);
+
+        // Navigation button
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(BG_COLOR);
+        JButton nextButton = new JButton("Dalej");
+        nextButton.setFont(BUTTON_FONT);
+        nextButton.setBackground(Color.DARK_GRAY);
+        nextButton.setForeground(Color.WHITE);
+        nextButton.setFocusPainted(false);
+        nextButton.setPreferredSize(new Dimension(150, 40));
+        nextButton.addActionListener(e -> cardLayout.show(mainPanel, "RISK_FACTORS"));
+        buttonPanel.add(nextButton);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+    private JPanel createRiskFactorsScreen() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Header
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        headerPanel.setBackground(BG_COLOR);
+        JLabel headerLabel = createHeaderLabel("Wybierz czynniki ryzyka:");
+        headerPanel.add(headerLabel);
+        panel.add(headerPanel, BorderLayout.NORTH);
+
+        // Risk factors checkboxes
+        JScrollPane riskFactorsScrollPane = createRiskFactorsPanel();
+        panel.add(riskFactorsScrollPane, BorderLayout.CENTER);
+
+        // Navigation buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(BG_COLOR);
+        
+        JButton backButton = new JButton("Wstecz");
+        backButton.setFont(BUTTON_FONT);
+        backButton.setBackground(Color.LIGHT_GRAY);
+        backButton.setForeground(Color.BLACK);
+        backButton.setFocusPainted(false);
+        backButton.setPreferredSize(new Dimension(150, 40));
+        backButton.addActionListener(e -> cardLayout.show(mainPanel, "SYMPTOMS"));
+        
+        JButton diagnoseButton = new JButton("Diagnozuj");
+        diagnoseButton.setFont(BUTTON_FONT);
+        diagnoseButton.setBackground(Color.DARK_GRAY);
+        diagnoseButton.setForeground(Color.WHITE);
+        diagnoseButton.setFocusPainted(false);
+        diagnoseButton.setPreferredSize(new Dimension(150, 40));
+        diagnoseButton.addActionListener(e -> {
+            przeprowadzDiagnoze();
+            cardLayout.show(mainPanel, "RESULTS");
+        });
+
+        buttonPanel.add(backButton);
+        buttonPanel.add(diagnoseButton);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+    private JPanel createResultsScreen() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Results section
+        JPanel resultsPanel = new JPanel(new BorderLayout());
+        resultsPanel.setBackground(BG_COLOR);
+        
+        JPanel resultsHeaderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        resultsHeaderPanel.setBackground(BG_COLOR);
+        JLabel resultsLabel = createHeaderLabel("Wyniki diagnozy:");
+        resultsHeaderPanel.add(resultsLabel);
+        resultsPanel.add(resultsHeaderPanel, BorderLayout.NORTH);
+        
+        JScrollPane wynikScrollPane = createResultsPanel();
+        resultsPanel.add(wynikScrollPane, BorderLayout.CENTER);
+
+        // Explanation section
+        JPanel explanationPanel = new JPanel(new BorderLayout());
+        explanationPanel.setBackground(BG_COLOR);
+        
+        JPanel explanationHeaderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        explanationHeaderPanel.setBackground(BG_COLOR);
+        JLabel explanationLabel = createHeaderLabel("Wyjaśnienie diagnozy:");
+        explanationHeaderPanel.add(explanationLabel);
+        explanationPanel.add(explanationHeaderPanel, BorderLayout.NORTH);
+        
+        JScrollPane wyjasnienieScrollPane = createExplanationPanel();
+        explanationPanel.add(wyjasnienieScrollPane, BorderLayout.CENTER);
+
+        // Combine results and explanation
+        JPanel contentPanel = new JPanel(new GridLayout(2, 1, 0, 20));
+        contentPanel.setBackground(BG_COLOR);
+        contentPanel.add(resultsPanel);
+        contentPanel.add(explanationPanel);
+        panel.add(contentPanel, BorderLayout.CENTER);
+
+        // Navigation button
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(BG_COLOR);
+        JButton newDiagnosisButton = new JButton("Nowa diagnoza");
+        newDiagnosisButton.setFont(BUTTON_FONT);
+        newDiagnosisButton.setBackground(Color.DARK_GRAY);
+        newDiagnosisButton.setForeground(Color.WHITE);
+        newDiagnosisButton.setFocusPainted(false);
+        newDiagnosisButton.setPreferredSize(new Dimension(150, 40));
+        newDiagnosisButton.addActionListener(e -> {
+            wyczyscWybor();
+            cardLayout.show(mainPanel, "SYMPTOMS");
+        });
+        buttonPanel.add(newDiagnosisButton);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+
+        return panel;
     }
     
     private JLabel createHeaderLabel(String text) {
@@ -158,34 +243,6 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
         scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
         scrollPane.getViewport().setBackground(BG_COLOR);
         return scrollPane;
-    }
-    
-    private JPanel createButtonPanel() {
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(BG_COLOR);
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        
-        // Przycisk diagnozy
-        JButton diagnozujButton = new JButton("Diagnozuj");
-        diagnozujButton.setFont(BUTTON_FONT);
-        diagnozujButton.setBackground(Color.DARK_GRAY);
-        diagnozujButton.setForeground(Color.WHITE);
-        diagnozujButton.setFocusPainted(false);
-        diagnozujButton.setPreferredSize(new Dimension(150, 40));
-        diagnozujButton.addActionListener(e -> przeprowadzDiagnoze());
-        buttonPanel.add(diagnozujButton);
-        
-        // Przycisk wyczyszczenia wyboru
-        JButton wyczyscButton = new JButton("Wyczyść wybór");
-        wyczyscButton.setFont(BUTTON_FONT);
-        wyczyscButton.setBackground(Color.LIGHT_GRAY);
-        wyczyscButton.setForeground(Color.BLACK);
-        wyczyscButton.setFocusPainted(false);
-        wyczyscButton.setPreferredSize(new Dimension(170, 40));
-        wyczyscButton.addActionListener(e -> wyczyscWybor());
-        buttonPanel.add(wyczyscButton);
-        
-        return buttonPanel;
     }
     
     private JScrollPane createResultsPanel() {
