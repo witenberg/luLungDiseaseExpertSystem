@@ -14,7 +14,6 @@ import org.jpl7.Term;
 public class DiagnosticEngine {
     
     public DiagnosticEngine() {
-        // Inicjalizacja silnika Prologowego
         Query loadFile = new Query("consult('src/main/prolog/lung_disease.pl')");
         if (!loadFile.hasSolution()) {
             throw new RuntimeException("Błąd: Nie udało się załadować pliku lung_disease.pl");
@@ -22,13 +21,10 @@ public class DiagnosticEngine {
     }
     
     public DiagnosticResult diagnose(List<String> symptoms, List<String> riskFactors) {
-        // Czyszczenie poprzednich faktów
         new Query("retractall(objaw(_))").hasSolution();
         new Query("retractall(czynnik_ryzyka(_))").hasSolution();
 
-        // Dodawanie nowych faktów (bez wag, ponieważ są one zdefiniowane w bazie wiedzy)
         for (String objaw : symptoms) {
-            // Usuwamy cudzysłowy z nazwy objawu, jeśli występują
             String cleanObjaw = objaw.replace("\"", "");
             new Query("assertz(objaw(" + cleanObjaw + "))").hasSolution();
         }
@@ -37,14 +33,11 @@ public class DiagnosticEngine {
             new Query("assertz(czynnik_ryzyka(" + cleanCzynnik + "))").hasSolution();
         }
 
-        // Tworzenie list w formacie Prologu
         String objawyList = symptoms.isEmpty() ? "[]" : "[" + String.join(",", symptoms.stream().map(s -> s.replace("\"", "")).collect(Collectors.toList())) + "]";
         String czynnikiList = riskFactors.isEmpty() ? "[]" : "[" + String.join(",", riskFactors.stream().map(s -> s.replace("\"", "")).collect(Collectors.toList())) + "]";
 
-        // Zapytanie diagnostyczne
         Query diagnostyka = new Query("diagnozuj(Choroba, " + objawyList + ", " + czynnikiList + ", Dopasowanie)");
 
-        // Lista do przechowywania wyników
         List<Map.Entry<String, Double>> diagnozyList = new ArrayList<>();
         Map<String, DiseaseExplanation> explanations = new HashMap<>();
         
@@ -57,11 +50,9 @@ public class DiagnosticEngine {
                 
                 diagnozyList.add(new AbstractMap.SimpleEntry<>(chorobaDisplay, dopasowanie));
                 
-                // Pobieranie danych do mechanizmu wyjaśniającego
                 explanations.put(chorobaDisplay, getExplanationForDisease(chorobaNazwa, symptoms, riskFactors));
             }
             
-            // Sortowanie wyników według dopasowania (malejąco)
             Collections.sort(diagnozyList, (a, b) -> Double.compare(b.getValue(), a.getValue()));
         }
         
@@ -69,37 +60,30 @@ public class DiagnosticEngine {
     }
     
     private DiseaseExplanation getExplanationForDisease(String diseaseName, List<String> providedSymptoms, List<String> providedRiskFactors) {
-        // Pobranie wszystkich wymaganych objawów dla choroby wraz z ich wagami
         Query symptomQuery = new Query("choroba(" + diseaseName + ", Wymagane), findall(X-W, (member(objaw(X, W), Wymagane)), WymaganeObjawyZWagami)");
         Map<String, Term> symptomResult = symptomQuery.oneSolution();
         List<String> requiredSymptoms = parseWeightedTerms(symptomResult.get("WymaganeObjawyZWagami"));
         
-        // Pobranie wszystkich wymaganych czynników ryzyka dla choroby wraz z ich wagami
         Query riskQuery = new Query("choroba(" + diseaseName + ", Wymagane), findall(Y-W, (member(czynnik_ryzyka(Y, W), Wymagane)), WymaganeCzynnikiZWagami)");
         Map<String, Term> riskResult = riskQuery.oneSolution();
         List<String> requiredRiskFactors = parseWeightedTerms(riskResult.get("WymaganeCzynnikiZWagami"));
         
-        // Pobranie objawów kluczowych
         Query keySymptomQuery = new Query("choroba(" + diseaseName + ", Wymagane), findall(X-W, (member(objaw_kluczowy(X, W), Wymagane)), WymaganeObjawyKluczoweZWagami)");
         Map<String, Term> keySymptomResult = keySymptomQuery.oneSolution();
         List<String> keySymptoms = parseWeightedTerms(keySymptomResult.get("WymaganeObjawyKluczoweZWagami"));
         
-        // Pobranie objawów wykluczających
         Query excludingSymptomQuery = new Query("choroba(" + diseaseName + ", Wymagane), findall(X, (member(objaw_wykluczajacy(X), Wymagane)), WymaganeObjawyWykluczajace)");
         Map<String, Term> excludingSymptomResult = excludingSymptomQuery.oneSolution();
         List<String> excludingSymptoms = parseSimpleTerms(excludingSymptomResult.get("WymaganeObjawyWykluczajace"));
         
-        // Znalezienie pasujących objawów (w tym kluczowych)
         List<String> matchingSymptoms = new ArrayList<>();
         for (String symptom : providedSymptoms) {
-            // Sprawdź zwykłe objawy
             for (String reqSymptom : requiredSymptoms) {
                 if (reqSymptom.startsWith(symptom + "-")) {
                     matchingSymptoms.add(reqSymptom);
                     break;
                 }
             }
-            // Sprawdź objawy kluczowe
             for (String keySymptom : keySymptoms) {
                 if (keySymptom.startsWith(symptom + "-")) {
                     matchingSymptoms.add(keySymptom);
@@ -108,7 +92,6 @@ public class DiagnosticEngine {
             }
         }
         
-        // Znalezienie pasujących czynników ryzyka
         List<String> matchingRiskFactors = providedRiskFactors.stream()
                 .filter(factor -> requiredRiskFactors.stream()
                         .anyMatch(req -> req.startsWith(factor + "-")))
@@ -125,16 +108,13 @@ public class DiagnosticEngine {
         );
     }
     
-    // Nowa metoda do parsowania prostych terminów (bez wag)
     private List<String> parseSimpleTerms(Term listTerm) {
         List<String> result = new ArrayList<>();
         
-        // Jeśli lista jest pusta, zwróć pustą listę
         if (listTerm.toString().equals("[]")) {
             return result;
         }
         
-        // Inaczej parsuj elementy listy
         Term currentTerm = listTerm;
         while (currentTerm.arity() == 2) {
             String name = currentTerm.arg(1).toString();
@@ -145,16 +125,13 @@ public class DiagnosticEngine {
         return result;
     }
     
-    // Nowa metoda do parsowania terminów z wagami
     private List<String> parseWeightedTerms(Term listTerm) {
         List<String> result = new ArrayList<>();
         
-        // Jeśli lista jest pusta, zwróć pustą listę
         if (listTerm.toString().equals("[]")) {
             return result;
         }
         
-        // Inaczej parsuj elementy listy
         Term currentTerm = listTerm;
         while (currentTerm.arity() == 2) {
             Term pair = currentTerm.arg(1);

@@ -59,14 +59,12 @@ public class DiseaseExplanation {
         return excludingSymptoms;
     }
     
-    // Metoda zwracająca listę brakujących objawów
     public List<String> getMissingSymptoms() {
         List<String> missing = new ArrayList<>(requiredSymptoms);
         missing.removeAll(matchingSymptoms);
         return missing;
     }
     
-    // Metoda zwracająca listę brakujących czynników ryzyka
     public List<String> getMissingRiskFactors() {
         List<String> missing = new ArrayList<>(requiredRiskFactors);
         missing.removeAll(matchingRiskFactors);
@@ -77,7 +75,6 @@ public class DiseaseExplanation {
         StringBuilder sb = new StringBuilder();
         sb.append("Wyjaśnienie diagnozy:\n\n");
 
-        // Sekcja objawów kluczowych
         if (!keySymptoms.isEmpty()) {
             sb.append("OBJAWY KLUCZOWE (wysokie prawdopodobieństwo choroby przy ich obecności):\n");
             for (String symptom : keySymptoms) {
@@ -95,7 +92,6 @@ public class DiseaseExplanation {
             sb.append("\n");
         }
 
-        // Sekcja objawów wykluczających
         if (!excludingSymptoms.isEmpty()) {
             sb.append("OBJAWY WYKLUCZAJĄCE (obecność któregokolwiek wyklucza diagnozę):\n");
             for (String symptom : excludingSymptoms) {
@@ -110,7 +106,6 @@ public class DiseaseExplanation {
             sb.append("\n");
         }
 
-        // Sekcja pasujących objawów
         if (!matchingSymptoms.isEmpty()) {
             sb.append("PASUJĄCE OBJAWY:\n");
             for (String symptom : matchingSymptoms) {
@@ -124,7 +119,6 @@ public class DiseaseExplanation {
             sb.append("\n");
         }
 
-        // Sekcja brakujących objawów
         List<String> missingSymptoms = requiredSymptoms.stream()
                 .filter(symptom -> !matchingSymptoms.contains(symptom))
                 .collect(Collectors.toList());
@@ -141,7 +135,6 @@ public class DiseaseExplanation {
             sb.append("\n");
         }
 
-        // Sekcja czynników ryzyka
         if (!matchingRiskFactors.isEmpty() || !requiredRiskFactors.isEmpty()) {
             sb.append("CZYNNIKI RYZYKA:\n");
             for (String factor : matchingRiskFactors) {

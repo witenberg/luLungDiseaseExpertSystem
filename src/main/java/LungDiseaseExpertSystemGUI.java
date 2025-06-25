@@ -22,11 +22,8 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 
 public class LungDiseaseExpertSystemGUI extends JFrame {
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private List<JCheckBox> objawyCheckBoxes;
+    private static final long serialVersionUID = 1L;
+    private List<JCheckBox> objawyCheckBoxes;
     private List<JCheckBox> czynnikRyzykaCheckBoxes;
     private JTextArea wynikArea;
     private JTextArea wyjasnienieArea;
@@ -43,11 +40,8 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
     private static final Font TEXTAREA_FONT = new Font("Consolas", Font.PLAIN, 16);
 
     public LungDiseaseExpertSystemGUI() {
-        // Inicjalizacja silnika diagnostycznego
         diagnosticEngine = new DiagnosticEngine();
-        // Konfiguracja okna
         configureFrame();
-        // Tworzenie i układanie komponentów UI
         createUIComponents();
         pack();
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -67,12 +61,10 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
         mainPanel = new JPanel(cardLayout);
         mainPanel.setBackground(BG_COLOR);
 
-        // Create the three main screens
         JPanel symptomsPanel = createSymptomsScreen();
         JPanel riskFactorsPanel = createRiskFactorsScreen();
         JPanel resultsPanel = createResultsScreen();
 
-        // Add screens to card layout
         mainPanel.add(symptomsPanel, "SYMPTOMS");
         mainPanel.add(riskFactorsPanel, "RISK_FACTORS");
         mainPanel.add(resultsPanel, "RESULTS");
@@ -85,18 +77,15 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
         panel.setBackground(BG_COLOR);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Header
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         headerPanel.setBackground(BG_COLOR);
         JLabel headerLabel = createHeaderLabel("Wybierz objawy:");
         headerPanel.add(headerLabel);
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        // Symptoms checkboxes
         JScrollPane symptomsScrollPane = createSymptomsPanel();
         panel.add(symptomsScrollPane, BorderLayout.CENTER);
 
-        // Navigation button
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(BG_COLOR);
         JButton nextButton = new JButton("Dalej");
@@ -117,18 +106,15 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
         panel.setBackground(BG_COLOR);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Header
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         headerPanel.setBackground(BG_COLOR);
         JLabel headerLabel = createHeaderLabel("Wybierz czynniki ryzyka:");
         headerPanel.add(headerLabel);
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        // Risk factors checkboxes
         JScrollPane riskFactorsScrollPane = createRiskFactorsPanel();
         panel.add(riskFactorsScrollPane, BorderLayout.CENTER);
 
-        // Navigation buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(BG_COLOR);
         
@@ -163,7 +149,6 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
         panel.setBackground(BG_COLOR);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Results section
         JPanel resultsPanel = new JPanel(new BorderLayout());
         resultsPanel.setBackground(BG_COLOR);
         
@@ -176,7 +161,6 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
         JScrollPane wynikScrollPane = createResultsPanel();
         resultsPanel.add(wynikScrollPane, BorderLayout.CENTER);
 
-        // Explanation section
         JPanel explanationPanel = new JPanel(new BorderLayout());
         explanationPanel.setBackground(BG_COLOR);
         
@@ -189,14 +173,12 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
         JScrollPane wyjasnienieScrollPane = createExplanationPanel();
         explanationPanel.add(wyjasnienieScrollPane, BorderLayout.CENTER);
 
-        // Combine results and explanation
         JPanel contentPanel = new JPanel(new GridLayout(2, 1, 0, 20));
         contentPanel.setBackground(BG_COLOR);
         contentPanel.add(resultsPanel);
         contentPanel.add(explanationPanel);
         panel.add(contentPanel, BorderLayout.CENTER);
 
-        // Navigation button
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(BG_COLOR);
         JButton newDiagnosisButton = new JButton("Nowa diagnoza");
@@ -300,7 +282,6 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
     }
 
     private void wyczyscWybor() {
-        // Odznaczenie wszystkich checkboxów
         for (JCheckBox checkbox : objawyCheckBoxes) {
             checkbox.setSelected(false);
         }
@@ -315,21 +296,18 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
         List<String> wybraneObjawy = new ArrayList<>();
         List<String> wybraneCzynniki = new ArrayList<>();
 
-        // Zbieranie zaznaczonych objawów
         for (JCheckBox checkbox : objawyCheckBoxes) {
             if (checkbox.isSelected()) {
                 wybraneObjawy.add(checkbox.getActionCommand());
             }
         }
 
-        // Zbieranie zaznaczonych czynników ryzyka
         for (JCheckBox checkbox : czynnikRyzykaCheckBoxes) {
             if (checkbox.isSelected()) {
                 wybraneCzynniki.add(checkbox.getActionCommand());
             }
         }
 
-        // Sprawdzenie czy cokolwiek zostało wybrane
         if (wybraneObjawy.isEmpty() && wybraneCzynniki.isEmpty()) {
             wynikArea.setText("Proszę wybrać przynajmniej jeden objaw lub czynnik ryzyka.");
             wyjasnienieArea.setText("");
@@ -337,13 +315,10 @@ public class LungDiseaseExpertSystemGUI extends JFrame {
         }
 
         try {
-            // Wykonanie diagnozy
             DiagnosticResult diagnosticResult = diagnosticEngine.diagnose(wybraneObjawy, wybraneCzynniki);
             
-            // Wyświetlenie wyników
             wynikArea.setText(diagnosticResult.getResultText());
             
-            // Wyświetlenie wyjaśnień
             wyjasnienieArea.setText(diagnosticResult.getExplanationText());
             
         } catch (Exception e) {

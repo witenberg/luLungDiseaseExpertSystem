@@ -1,4 +1,3 @@
-// Klasa z danymi statycznymi
 package main.java;
 
 import java.util.Arrays;
@@ -7,7 +6,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DiagnosticData {
-    // Listy objawów i czynników ryzyka
     public static final List<String> OBJAWY_ISTNIEJACE = Arrays.asList(
             "kaszel", "suchy_kaszel", "mokry_kaszel", "kaszel_z_krwia", "goraczka",
             "dusznosc", "bol_w_klatce_piersiowej", "zmeczenie", "utrata_masy_ciala",
@@ -55,8 +53,6 @@ public class DiagnosticData {
             "uczucie_duszenia_sie_topienia", "swistajacy_oddech_lub_rzężenia", "zimna_spocona_skora",
             "objawy_zlokalizowane_wylacznie_poza_ukladem_oddechowym_i_krążenia",
             "odkrztuszanie_krwi_lub_plwociny_z_krwia"
-            // Dodatkowe dla rozedmy (jeśli byłaby odkomentowana)
-            // "beczkowata_klatka_piersiowa", "dusznosc_znaczna", "wydluzony_wydech", "uzywanie_dodatkowych_miesni_oddechowych"
     );
 
     public static final List<String> OBJAWY = Stream.concat(OBJAWY_ISTNIEJACE.stream(), OBJAWY_NOWE.stream())
@@ -80,13 +76,13 @@ public class DiagnosticData {
             "przebyte_ciezkie_infekcje_plucne", "zaburzenia_odpornosci",
             "historia_rodzinna_mukowiscydozy",
             "narazenie_na_bierne_palenie", "narazenie_na_radon_azbest_inne_rakotworcze", "historia_rodzinna_raka_pluc",
-            "narazenie_na_azbest", // Zastępuje 'narazenie_na_azbestowe' dla spójności
+            "narazenie_na_azbest",
             "wiek_20_40_lat", "pochodzenie_afroamerykanskie_skandynawskie",
-            "wiek_powyzej_60", // Bardziej specyficzny niż wiek_powyzej_50 dla IPF
+            "wiek_powyzej_60",
             "palenie_tytoniu_w_anamnezie",
             "dlugotrwale_narazenie_na_azbest",
             "dlugotrwale_narazenie_na_pyl_mineralny",
-            "zakrzepica_zyl_glebokich_DVT", // Zastępuje 'zakrzepica_zylna'
+            "zakrzepica_zyl_glebokich_DVT",
             "dlugotrwale_unieruchomienie", "zabiegi_operacyjne_urazy", "nowotwory_zlosliwe",
             "stosowanie_doustnej_antykoncepcji_hormonalnej_terapii_zastepczej",
             "choroby_serca_lewej_komory", "przewlekle_choroby_pluc_np_POChP_wloknienie",
@@ -94,18 +90,14 @@ public class DiagnosticData {
             "wysoki_szczuply_mlody_mezczyzna", "choroby_pluc_np_POChP_mukowiscydoza", "uraz_klatki_piersiowej",
             "unieruchomienie_po_operacji", "zablokowanie_drzewa_oskrzelowego", "ucisk_na_pluco_z_zewnatrz",
             "choroby_serca_niewydolnosc_serca", "wysokie_cisnienie_krwi", "uszkodzenie_pluc_np_ARDS_infekcja"
-            // Dodatkowe dla rozedmy (jeśli byłaby odkomentowana)
-            // "niedobor_alfa_1_antytrypsyny"
     );
 
     public static final List<String> CZYNNIKI_RYZYKA = Stream.concat(CZYNNIKI_RYZYKA_ISTNIEJACE.stream(), CZYNNIKI_RYZYKA_NOWE.stream())
             .distinct()
             .collect(Collectors.toList());
 
-    // Mapa tłumaczeń objawów na język polski (do wyjaśnień)
     public static String translateSymptom(String symptom) {
         switch(symptom) {
-            // Istniejące
             case "kaszel": return "kaszel";
             case "suchy_kaszel": return "suchy kaszel";
             case "mokry_kaszel": return "mokry kaszel";
@@ -120,7 +112,7 @@ public class DiagnosticData {
             case "pocenie_nocne": return "pocenie nocne";
             case "trudnosci_w_oddychaniu": return "trudności w oddychaniu";
             case "swistajacy_oddech": return "świszczący oddech";
-            case "bol_plec": return "ból pleców"; // Poprawiona literówka
+            case "bol_plec": return "ból pleców";
             case "szybkie_oddychanie": return "szybkie oddychanie";
             case "przyspieszony_oddech": return "przyspieszony oddech";
             case "obrzek_wezlow_chlonnych": return "obrzęk węzłów chłonnych";
@@ -135,7 +127,6 @@ public class DiagnosticData {
             case "omdlenia": return "omdlenia";
             case "krwioplucie": return "krwioplucie";
 
-            // Nowe
             case "dreszcze": return "dreszcze";
             case "poty": return "poty";
             case "splatanie_u_starszych": return "splątanie u osób starszych";
@@ -180,7 +171,6 @@ public class DiagnosticData {
             case "postepujaca_dusznosc_wysilkowa": return "postępująca duszność wysiłkowa";
             case "suchy_uporczywy_kaszel": return "suchy, uporczywy kaszel";
             case "znana_przyczyna_wloknienia_pluc": return "znana przyczyna włóknienia płuc (np. narażenie zawodowe, choroba tkanki łącznej)";
-            // "postepujaca_dusznosc" already exists, so covered
             case "suchy_kaszel_przewlekly": return "suchy kaszel przewlekły";
             case "bol_lub_ucisk_w_klatce_piersiowej": return "ból lub ucisk w klatce piersiowej";
             case "trzeszczenia_w_plucach": return "trzeszczenia w płucach (słyszalne podczas osłuchiwania)";
@@ -208,31 +198,20 @@ public class DiagnosticData {
             case "objawy_zlokalizowane_wylacznie_poza_ukladem_oddechowym_i_krążenia": return "objawy zlokalizowane wyłącznie poza układem oddechowym i krążenia";
             case "odkrztuszanie_krwi_lub_plwociny_z_krwia": return "odkrztuszanie krwi lub plwociny z domieszką krwi";
 
-            // Dla rozedmy, gdyby była
-            // case "beczkowata_klatka_piersiowa": return "beczkowata klatka piersiowa";
-            // case "dusznosc_znaczna": return "znaczna duszność";
-            // case "wydluzony_wydech": return "wydłużony wydech";
-            // case "uzywanie_dodatkowych_miesni_oddechowych": return "używanie dodatkowych mięśni oddechowych";
-
             default: return symptom.replace("_", " ");
         }
     }
 
-    // Mapa tłumaczeń czynników ryzyka na język polski (do wyjaśnień)
     public static String translateRiskFactor(String factor) {
         switch(factor) {
-            // Istniejące
             case "palenie_tytoniu": return "palenie tytoniu";
-            // case "narazenie_na_azbestowe": return "narażenie na azbest"; // Zastąpione przez narazenie_na_azbest
             case "przewlekle_zapalenie_oskrzeli": return "przewlekłe zapalenie oskrzeli";
-            case "zakazone_srodowisko_pracy": return "zakażone środowisko pracy (np. pyły, gazy)"; // Doprecyzowane
+            case "zakazone_srodowisko_pracy": return "zakażone środowisko pracy (np. pyły, gazy)";
             case "obesity": return "otyłość";
-            case "wiek_powyzej_50": return "wiek powyżej 50 lat"; // Ogólne, niektóre choroby mają bardziej specyficzne (np. wiek_powyzej_60)
+            case "wiek_powyzej_50": return "wiek powyżej 50 lat";
             case "narazenie_na_alergeny": return "narażenie na alergeny";
-            // case "zakrzepica_zylna": return "zakrzepica żylna"; // Zastąpione przez zakrzepica_zyl_glebokich_DVT
             case "zaburzenia_polykania": return "zaburzenia połykania";
 
-            // Nowe
             case "wiek_starszy": return "podeszły wiek";
             case "oslabiony_uklad_odpornosciowy": return "osłabiony układ odpornościowy";
             case "przewlekle_choroby_pluc": return "przewlekłe choroby płuc (inne)";
@@ -280,15 +259,11 @@ public class DiagnosticData {
             case "wysokie_cisnienie_krwi": return "wysokie ciśnienie krwi (nadciśnienie tętnicze)";
             case "uszkodzenie_pluc_np_ARDS_infekcja": return "uszkodzenie płuc (np. ARDS, ciężka infekcja)";
 
-            // Dla rozedmy, gdyby była
-            // case "niedobor_alfa_1_antytrypsyny": return "niedobór alfa-1 antytrypsyny";
-
             default: return factor.replace("_", " ");
         }
     }
 
-    // Metoda tłumacząca nazwę choroby na bardziej przyjazną formę
     public static String translateDiseaseName(String disease) {
-        return disease.replace("_", " "); // Proste tłumaczenie, można rozbudować jeśli nazwy chorób w Prologu są skrótami
+        return disease.replace("_", " ");
     }
 }

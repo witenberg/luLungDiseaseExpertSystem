@@ -25,7 +25,6 @@ public class DiagnosticResult {
             return result.toString();
         }
         
-        // Pobierz najbardziej prawdopodobną diagnozę
         Map.Entry<String, Double> mostProbableDiagnosis = diagnoses.get(0);
         String diseaseName = DiagnosticData.translateDiseaseName(mostProbableDiagnosis.getKey());
         double probability = mostProbableDiagnosis.getValue();
@@ -33,7 +32,6 @@ public class DiagnosticResult {
         result.append("Najbardziej prawdopodobna diagnoza:\n");
         result.append(diseaseName).append(" - ").append(String.format("%.2f", probability)).append("%\n\n");
         
-        // Dodaj informację o innych możliwych diagnozach, jeśli istnieją
         if (diagnoses.size() > 1) {
             result.append("Inne możliwe diagnozy:\n");
             for (int i = 1; i < diagnoses.size(); i++) {
@@ -52,7 +50,6 @@ public class DiagnosticResult {
             return "Brak wyjaśnień - nie znaleziono pasujących chorób.";
         }
         
-        // Pobierz wyjaśnienie dla najbardziej prawdopodobnej diagnozy
         String mostProbableDisease = diagnoses.get(0).getKey();
         DiseaseExplanation explanation = explanations.get(mostProbableDisease);
         
